@@ -7,6 +7,8 @@ a=1;
 
 #인터넷 실명제 전 후 제목 데이터 따오기
 
+t = input("몇개의 게시글을 분석하시겠습니까? (단위 : 20)")
+t = int(t)
 BASE_URL = 'https://gall.dcinside.com/board/lists/?id=news'
 params = {
     'id' : 'news'
@@ -15,9 +17,9 @@ params = {
 after_data = []
 before_data = []
 
-for i in range(10):
-    before_list = ["49406","49407","49408","49409",'49410','49411','49412','49413','49414','49415']
-    resp = requests.get(BASE_URL+'&page='+before_list[i], headers=headers)
+for i in range(t):
+    page_number = str(49406+i)
+    resp = requests.get(BASE_URL+'&page='+page_number, headers=headers)
     soup = BeautifulSoup(resp.content, 'html.parser')
     contents = soup.find('tbody').find_all('tr')
 
@@ -26,9 +28,9 @@ for i in range(10):
         title = title_tag.text
         before_data.append(title)
 
-for s in range(10):
-    after_list = ["49404", '49403',"49402","49401","49400",'49399','49398','49397','49396','49395']
-    resp = requests.get(BASE_URL+'&page='+after_list[s], headers=headers)
+for s in range(t):
+    page_number = str(49404-s)
+    resp = requests.get(BASE_URL+'&page='+page_number, headers=headers)
     soup = BeautifulSoup(resp.content, 'html.parser')
     contents = soup.find('tbody').find_all('tr')
 
@@ -52,4 +54,25 @@ for m in range(len(before_data)):
         if bad_word[b] in before_data[m]: 
             count_be += 1
 
-print(str(count_af) + '/' + str(count_be))
+print("이전 욕설 수치" + str(count_be))
+print("이후 욕설 수치" + str(count_af))
+
+def compare(count_be, count_af):
+    if count_be < count_af:
+        try: value = round((count_af - count_be) / count_be * 100, 2)
+        except : value = 100
+    elif count_be > count_af:
+        try:value = -round((count_be-count_af)/count_be* 100/2)
+        except: value = -100
+    else:
+        value = 0
+    return value
+
+var = compare(count_be=count_be, count_af=count_af)
+if var > 0:
+    print("증가율 : " + str(var) + "%")
+elif var < 0:
+    print("감소율" + str(var) + "%")
+else: 
+    print("증감 없음")
+
